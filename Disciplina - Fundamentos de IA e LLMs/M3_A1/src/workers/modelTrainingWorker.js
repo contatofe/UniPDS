@@ -60,7 +60,7 @@ function makeContext(products, users) {
         maxPrice,
         numCategories: category.length,
         numColors: colors.length,
-        dimentions: 2 + category.length + colors.length
+        dimensions: 2 + category.length + colors.length
     }
 
 
@@ -109,7 +109,7 @@ function encodeUser(user, context) {
             )
         )
         .mean(0)
-        .reshape([1, context.dimentions])
+        .reshape([1, context.dimensions])
         
     }
 
@@ -136,12 +136,13 @@ function createTrainingData(context) {
             labels.push(label)
             
         })
-        return {
-            xs: tf.tensor2d(inputs),
-            ys: tf.tensor2d(labels, [labels.length, 1]),
-            inputDimension: context.dimentions * 2
-        }
+
     })
+    return {
+        xs: tf.tensor2d(inputs),
+        ys: tf.tensor2d(labels, [labels.length, 1]),
+        inputDimension: context.dimensions * 2
+    }    
 }
 
 
