@@ -102,6 +102,17 @@ function encodeUser(user, context) {
       .mean(0)
       .reshape([1, context.dimensions]);
   }
+
+  return tf
+    .concat1d([
+      tf.zeros([1]),
+      tf.tensor1d([
+        normalize(user.age, context.minAge, context.maxAge) * WEIGHTS.age,
+      ]),
+      tf.zeros([context.numCategories]),
+      tf.zeros([context.numColors]),
+    ])
+    .reshape([1, context.dimensions]);
 }
 
 function createTrainingData(context) {
@@ -184,6 +195,7 @@ async function configureNeuralNetAndTrain(trainData) {
       },
     },
   });
+  return model;
 }
 
 async function trainModel({ users }) {
@@ -214,12 +226,34 @@ async function trainModel({ users }) {
 }
 
 function recommend(user, ctx) {
-  console.log("will recommend for user:", user);
-  // postMessage({
-  //     type: workerEvents.recommend,
-  //     user,
-  //     recommendations: []
-  // });
+  if (!_model) return;
+  const context = _globalCtx;
+  const userVector = encodeUser(user, _globalCtx).dataSync();
+  const inputs = context.productVectors.map(({ vector }) => {
+    return [...userVector, ...vector];
+  });
+
+  const inputTensor = tf.tensor2d(inputs);
+
+  const predictions = _model.predict(inputTensor);
+
+  const scores = predictions.dataSync();
+
+  const recommendations = context.productVectors.map((item, index) => {
+    return {
+      ...item.meta,
+      name: item.name,
+      score: scores[index],
+    };
+  });
+
+  const sortedItems = recommendations.sort((a, b) => b.score - a.score);
+
+  postMessage({
+    type: workerEvents.recommend,
+    user,
+    recommendations: sortedItems,
+  });
 }
 
 const handlers = {
