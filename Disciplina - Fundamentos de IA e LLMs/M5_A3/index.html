@@ -7,18 +7,55 @@
 <div class="container">
   <div>
     <input placeholder="Faça uma pergunta" id="input" />
+    <input type="file" id="file" accept="image/*,audio/*" />
     <button id="perguntar">Perguntar</button>
   </div>
-
   <output id="output"></output>
 </div>
 
 <script>
-  const output = document.getElementById("output");
+  function question() {
+    const text = document.getElementById("input").value.trim();
+    const file = document.getElementById("file").files[0];
 
+    const content = [];
+
+    if (text) {
+      content.push({
+        type: "text",
+        value: text,
+      });
+
+      if (file) {
+        if (file.type.startsWith("image/")) {
+          content.push({
+            type: "image",
+            value: file,
+          });
+        } else if (file.type.startsWith("audio/")) {
+          content.push({
+            type: "audio",
+            value: file,
+          });
+        } else {
+          throw new Error("Selecione uma imagem ou um áudio.");
+        }
+      }
+    }
+    return content;
+  }
+
+  const output = document.getElementById("output");
   const botao = document.getElementById("perguntar");
 
   botao.addEventListener("click", async () => {
+    const content = question();
+
+    if (content.length === 0) {
+      output.textContent = "Digite uma pergunta ou selecione um arquivo.";
+      return;
+    }
+
     botao.disabled = true;
     let session;
 
@@ -30,12 +67,14 @@
       },
     ];
 
-    const question = document.getElementById("input").value;
-
     output.textContent = "Aguarde...";
 
     session = await LanguageModel.create({
-      expectedInputs: [{ type: "text", languages: ["en"] }],
+      expectedInputs: [
+        { type: "text", languages: ["en"] },
+        { type: "image" },
+        { type: "audio" },
+      ],
       expectedOutputs: [{ type: "text", languages: ["en"] }],
       initialPrompts: initialPrompts,
     });
@@ -45,7 +84,7 @@
     const responseStream = await session.promptStreaming([
       {
         role: "user",
-        content: question,
+        content,
       },
     ]);
 
