@@ -1,8 +1,17 @@
 <meta charset="UTF-8" />
-<output id="output"></output>
+
+<link rel="stylesheet" href="styles.css" />
+
 <script src="https://cdn.jsdelivr.net/npm/markdown@0.5.0/lib/markdown.min.js"></script>
 
-<button id="perguntar">Perguntar</button>
+<div class="container">
+  <div>
+    <input placeholder="Faça uma pergunta" id="input" />
+    <button id="perguntar">Perguntar</button>
+  </div>
+
+  <output id="output"></output>
+</div>
 
 <script>
   const output = document.getElementById("output");
@@ -21,9 +30,9 @@
       },
     ];
 
-    const question = "Quem inventou o JavaScript?";
+    const question = document.getElementById("input").value;
 
-    output.textContent = "Preparando modelo...";
+    output.textContent = "Aguarde...";
 
     session = await LanguageModel.create({
       expectedInputs: [{ type: "text", languages: ["en"] }],
@@ -40,6 +49,7 @@
       },
     ]);
 
+    output.innerHTML = "";
     let fullText = "";
 
     for await (const token of responseStream) {
