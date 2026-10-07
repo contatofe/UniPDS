@@ -1,0 +1,53 @@
+<meta charset="UTF-8" />
+<output id="output"></output>
+<script src="https://cdn.jsdelivr.net/npm/markdown@0.5.0/lib/markdown.min.js"></script>
+
+<button id="perguntar">Perguntar</button>
+
+<script>
+  const output = document.getElementById("output");
+
+  const botao = document.getElementById("perguntar");
+
+  botao.addEventListener("click", async () => {
+    botao.disabled = true;
+    let session;
+
+    const initialPrompts = [
+      {
+        role: "system",
+        content:
+          "Você é um assistente de IA que responde de forma clara e  objetiva",
+      },
+    ];
+
+    const question = "Quem inventou o JavaScript?";
+
+    output.textContent = "Preparando modelo...";
+
+    session = await LanguageModel.create({
+      expectedInputs: [{ type: "text", languages: ["en"] }],
+      expectedOutputs: [{ type: "text", languages: ["en"] }],
+      initialPrompts: initialPrompts,
+    });
+
+    output.textContent = "Gerando resposta...";
+
+    const responseStream = await session.promptStreaming([
+      {
+        role: "user",
+        content: question,
+      },
+    ]);
+
+    let fullText = "";
+
+    for await (const token of responseStream) {
+      fullText += token;
+      output.innerHTML = markdown.toHTML(fullText);
+    }
+
+    session.destroy();
+    botao.disabled = false;
+  });
+</script>
