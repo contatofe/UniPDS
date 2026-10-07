@@ -1,4 +1,4 @@
-# Módulo 2 - Aula 4
+# Módulo 4 - Aula 2
 
 ## COMO FUNCIONAM SISTEMAS DE RECOMENDAÇÃO
 
