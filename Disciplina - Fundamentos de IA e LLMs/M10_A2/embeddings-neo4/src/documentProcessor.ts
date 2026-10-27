@@ -2,6 +2,7 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { type TextSplitterConfig } from "./config.ts";
 
+
 export class DocumentProcessor {
   private pdfPath: string;
   private textSplitterConfig: TextSplitterConfig;
